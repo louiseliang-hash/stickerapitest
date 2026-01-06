@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINE 貼圖觸發自動化 Demo</title>
+    <title>熊大商店：貼圖領好禮 Demo</title>
     <style>
-        :root { --line-green: #00b900; --line-blue: #7494C0; --police-red: #ff3b30; }
+        :root { --line-green: #00b900; --line-blue: #7494C0; --line-gray: #f4f4f4; }
         * { box-sizing: border-box; font-family: sans-serif; }
         body { margin: 0; padding: 0; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; gap: 20px; }
         
         /* 手機外框 */
         .phone-container { width: 360px; height: 640px; background: #fff; border: 12px solid #1a1a1a; border-radius: 40px; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .page { display: none; width: 100%; height: 100%; flex-direction: column; }
-        .page.active { display: flex; }
+        .page { display: flex; width: 100%; height: 100%; flex-direction: column; }
 
         /* 後台管理面板 */
         .admin-panel { width: 300px; background: #f8f9fa; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: #333; }
@@ -22,16 +21,19 @@
         /* LINE 聊天室 */
         .header { background: #4E6280; color: white; padding: 15px; text-align: center; font-weight: bold; }
         .line-chat-bg { background: var(--line-blue); flex-grow: 1; padding: 10px; display: flex; flex-direction: column; overflow-y: auto; }
-        .msg { padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 14px; max-width: 80%; position: relative; }
+        .msg { padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 14px; max-width: 80%; }
         .msg-left { background: #fff; align-self: flex-start; color: #333; }
         .msg-right { background: #85E249; align-self: flex-end; color: #333; }
-        .sticker-msg { width: 100px; height: 100px; background: none; }
         
-        .oa-card { background: #fff; border-radius: 10px; overflow: hidden; width: 220px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-top: 5px; }
-        .oa-btn { padding: 10px; text-align: center; color: #007bff; border-top: 1px solid #eee; cursor: pointer; font-weight: bold; }
+        /* Flex Message 模擬 */
+        .flex-card { background: #fff; border-radius: 12px; overflow: hidden; width: 250px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 5px; align-self: flex-start; }
+        .flex-hero { background: #FFD700; height: 120px; display: flex; justify-content: center; align-items: center; font-size: 50px; }
+        .flex-body { padding: 15px; text-align: center; }
+        .flex-title { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+        .flex-text { font-size: 12px; color: #666; margin-bottom: 15px; }
+        .flex-btn { background: var(--line-green); color: white; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; display: block; }
 
-        /* 隱藏原生貼圖選單 */
-        .input-area { padding: 10px; background: #fff; display: flex; align-items: center; gap: 5px; }
+        .input-area { padding: 10px; background: #fff; display: flex; align-items: center; gap: 5px; border-top: 1px solid #eee; }
         .sticker-trigger { font-size: 24px; cursor: pointer; }
     </style>
 </head>
@@ -39,53 +41,36 @@
 
     <div class="admin-panel">
         <h3>後台設定</h3>
-        <p style="font-size: 12px; color: #666;">步驟 1：設定規則</p>
+        <p style="font-size: 12px; color: #666;">規則：傳送指定貼圖 ID 後，自動觸發禮物 Flex Message。</p>
         <label>貼圖 ID</label>
         <input type="text" id="setStickerId" value="52002734">
-        <label>觸發關鍵字</label>
-        <input type="text" id="setKeyword" value="110">
-        <button onclick="updateRule()" style="width:100%; background:var(--line-green); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold;">儲存規則</button>
+        <label>對應行為</label>
+        <input type="text" id="setKeyword" value="發送禮物卡片" readonly>
+        <button onclick="updateRule()" style="width:100%; background:var(--line-green); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold;">更新規則</button>
         <hr>
-        <p style="font-size: 12px; color: #666;">目前的對應：<br><span id="ruleDisplay">ID 52002734 ?? 「110」</span></p>
+        <div id="ruleDisplay" style="font-size: 13px; color: #444;">當前規則：偵測 ID 52002734</div>
     </div>
 
     <div class="phone-container">
-        <div id="p1" class="page active">
-            <div class="header">內政部警政署 110</div>
+        <div class="page">
+            <div class="header">熊大商店</div>
             <div class="line-chat-bg" id="chatBox">
-                <div class="msg msg-left">您好，傳送設定好的貼圖即可觸發報案功能。</div>
+                <div class="msg msg-left">歡迎！發送本月任務貼圖，即可領取專屬好禮 🎁</div>
             </div>
             <div class="input-area">
-                <span class="sticker-trigger" onclick="simulateSendSticker()">??</span>
-                <input type="text" placeholder="Aa" readonly style="flex-grow:1; background:#eee; border:none;">
-            </div>
-        </div>
-        
-        <div id="p2" class="page">
-            <div class="header">110 視訊報案</div>
-            <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:20px; background:#f4f4f4;">
-                <div class="oa-card" style="width:280px;">
-                    <div style="padding:20px; text-align:center;">
-                        <img src="https://img.icons8.com/color/96/police-badge.png" width="60"><br><br>
-                        <strong>偵測到緊急報案貼圖</strong><br>
-                        <span style="font-size:12px; color:#666;">是否啟動 110 視訊報案系統？</span>
-                    </div>
-                    <div class="oa-btn" onclick="window.open('https://liff.line.me/2008742005-3DHkWzkg','_blank')">啟動視訊報案</div>
-                </div>
-                <button onclick="location.reload()" style="margin-top:20px; background:none; border:none; color:#999; cursor:pointer;">取消並返回</button>
+                <span class="sticker-trigger" onclick="simulateSendSticker()">😊</span>
+                <input type="text" placeholder="Aa" readonly style="flex-grow:1; background:#eee; border:none; padding:8px; border-radius:5px;">
             </div>
         </div>
     </div>
 
     <script>
         let currentStickerId = "52002734";
-        let currentKeyword = "110";
 
         function updateRule() {
             currentStickerId = document.getElementById('setStickerId').value;
-            currentKeyword = document.getElementById('setKeyword').value;
-            document.getElementById('ruleDisplay').innerText = `ID ${currentStickerId} ?? 「${currentKeyword}」`;
-            alert("規則已更新！現在傳送貼圖將觸發「" + currentKeyword + "」流程");
+            document.getElementById('ruleDisplay').innerText = `當前規則：偵測 ID ${currentStickerId}`;
+            alert("後台規則已更新！");
         }
 
         function simulateSendSticker() {
@@ -96,25 +81,22 @@
             stickerMsg.className = 'msg msg-right';
             stickerMsg.innerHTML = `<img src="https://stickershop.line-scdn.net/stickershop/v1/sticker/${currentStickerId}/android/sticker.png" style="width:80px;">`;
             chatBox.appendChild(stickerMsg);
-            
-            // 捲動到底部
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // 2. 模擬後端判斷 ID 並自動回覆關鍵字卡片
+            // 2. 模擬後端判斷 ID 並回覆 Flex Message
             setTimeout(() => {
-                const replyMsg = document.createElement('div');
-                replyMsg.className = 'msg msg-left';
-                replyMsg.innerText = `系統辨識：觸發關鍵字「${currentKeyword}」`;
-                chatBox.appendChild(replyMsg);
+                const flexCard = document.createElement('div');
+                flexCard.className = 'flex-card';
+                flexCard.innerHTML = `
+                    <div class="flex-hero">🎁</div>
+                    <div class="flex-body">
+                        <div class="flex-title">恭喜完成任務！</div>
+                        <div class="flex-text">感謝您下載本月貼圖，點擊下方按鈕領取您的限量任務獎勵。</div>
+                        <div class="flex-btn" onclick="alert('連結至任務頁面...')">領取你的任務好禮</div>
+                    </div>
+                `;
+                chatBox.appendChild(flexCard);
                 chatBox.scrollTop = chatBox.scrollHeight;
-
-                // 3. 進入報案流程
-                if (currentKeyword === "110") {
-                    setTimeout(() => {
-                        document.getElementById('p1').classList.remove('active');
-                        document.getElementById('p2').classList.add('active');
-                    }, 1000);
-                }
             }, 1000);
         }
     </script>

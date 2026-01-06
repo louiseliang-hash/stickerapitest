@@ -3,120 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>熊大商店：精準貼圖觸發 Demo</title>
+    <title>LINE 貼圖自動化 CMS Demo</title>
     <style>
         :root { --line-green: #00b900; --line-blue: #7494C0; --dark-bg: #2c3e50; }
         * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
         body { margin: 0; padding: 0; background: var(--dark-bg); display: flex; justify-content: center; align-items: center; height: 100vh; gap: 20px; }
         
         /* 管理面板 */
-        .admin-panel { width: 320px; background: #f8f9fa; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: #333; }
+        .admin-panel { width: 340px; background: #f8f9fa; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: #333; }
         .admin-panel h3 { margin-top: 0; color: var(--line-green); border-bottom: 2px solid var(--line-green); padding-bottom: 10px; font-size: 18px; }
         .input-group { margin-bottom: 15px; }
         label { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 5px; }
-        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        .update-btn { width: 100%; background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .update-btn:hover { background: #009800; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; background: white; }
+        .update-btn { width: 100%; background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
         /* 手機模擬器 */
         .phone-container { width: 360px; height: 640px; background: #fff; border: 12px solid #1a1a1a; border-radius: 40px; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .header { background: #4E6280; color: white; padding: 15px; text-align: center; font-weight: bold; }
-        .line-chat-bg { background: var(--line-blue); height: calc(100% - 110px); padding: 10px; display: flex; flex-direction: column; overflow-y: auto; }
+        .line-chat-bg { background: var(--line-blue); height: calc(100% - 110px); padding: 15px; display: flex; flex-direction: column; overflow-y: auto; }
         
-        /* 訊息氣泡 */
-        .msg { padding: 10px 15px; border-radius: 15px; margin-bottom: 10px; font-size: 14px; line-height: 1.4; }
+        /* 訊息樣式 */
+        .msg { padding: 10px 15px; border-radius: 15px; margin-bottom: 10px; font-size: 14px; max-width: 85%; }
         .msg-left { background: #fff; align-self: flex-start; color: #333; }
-        .msg-right { background: #85E249; align-self: flex-end; color: #333; display: flex; flex-direction: column; align-items: flex-end; }
-        .sticker-img { width: 100px; height: 100px; display: block; margin-top: 5px; }
+        .msg-right { background: #85E249; align-self: flex-end; color: #333; }
+        .sticker-img { width: 100px; height: 100px; }
 
-        /* Flex Card */
-        .flex-card { background: #fff; border-radius: 15px; overflow: hidden; width: 260px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin: 10px 0; align-self: flex-start; animation: popIn 0.3s ease; }
-        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .flex-hero { background: #FEE12B; height: 100px; display: flex; justify-content: center; align-items: center; font-size: 50px; }
-        .flex-body { padding: 15px; text-align: center; }
-        .flex-btn { background: var(--line-green); color: white; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        /* Flex & Image Card */
+        .flex-card { background: #fff; border-radius: 12px; overflow: hidden; width: 250px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: 5px 0; align-self: flex-start; }
+        .image-card { width: 200px; border-radius: 10px; margin: 5px 0; align-self: flex-start; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
         .input-area { height: 60px; background: #fff; display: flex; align-items: center; padding: 0 15px; border-top: 1px solid #eee; }
-        .icon { font-size: 24px; cursor: pointer; margin-right: 10px; filter: grayscale(1); }
     </style>
 </head>
 <body>
 
     <div class="admin-panel">
-        <h3>貼圖規則後台</h3>
+        <h3>行為觸發 CMS</h3>
         
         <div class="input-group">
-            <label>Package ID (包組 ID)</label>
+            <label>Package ID</label>
             <input type="text" id="pkgId" value="11537">
         </div>
         
         <div class="input-group">
-            <label>Sticker ID (貼圖 ID)</label>
+            <label>Sticker ID</label>
             <input type="text" id="stkId" value="52002734">
         </div>
-        
+
         <div class="input-group">
-            <label>觸發行為</label>
-            <input type="text" value="發送禮物 Flex Message" readonly style="background:#eee;">
+            <label>選擇觸發行為</label>
+            <select id="actionType" onchange="toggleInput()">
+                <option value="flex">發送禮物 Flex Message</option>
+                <option value="keyword">關鍵字：自行輸入</option>
+                <option value="image">圖片檔案</option>
+            </select>
+        </div>
+
+        <div id="keywordInputArea" class="input-group" style="display:none;">
+            <label>設定關鍵字內容</label>
+            <input type="text" id="customKeyword" value="歡迎參加 2026 貼圖節！">
+        </div>
+
+        <div id="imageInputArea" class="input-group" style="display:none;">
+            <label>圖片 URL</label>
+            <input type="text" id="imageUrl" value="https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&q=80">
         </div>
         
-        <button class="update-btn" onclick="updateStickerConfig()">同步至聊天室</button>
-        
-        <div style="margin-top: 20px; font-size: 11px; color: #888; line-height: 1.6;">
-            💡 <b>Demo 提示：</b><br>
-            你可以更換不同包組的 ID，模擬針對不同活動貼圖給予不同贈品的邏輯。
-        </div>
+        <button class="update-btn" onclick="saveConfig()">更新後台設定</button>
     </div>
 
     <div class="phone-container">
-        <div class="header">熊大商店</div>
+        <div class="header">官方帳號服務</div>
         <div class="line-chat-bg" id="chatBox">
-            <div class="msg msg-left">歡迎！發送本月活動貼圖，立刻領取專屬任務好禮 🎁</div>
+            <div class="msg msg-left">傳送指定的測試貼圖，觀察後台觸發行為。</div>
         </div>
         <div class="input-area">
-            <div class="icon" onclick="sendCustomSticker()">😊</div>
-            <input type="text" placeholder="Aa" disabled style="flex-grow:1; border:none; background:#f0f0f0; padding:8px; border-radius:20px;">
+            <div onclick="triggerSend()" style="font-size:24px; cursor:pointer; margin-right:10px;">😊</div>
+            <div style="flex-grow:1; height:35px; background:#f0f0f0; border-radius:20px;"></div>
         </div>
     </div>
 
     <script>
-        let config = {
-            packageId: "11537",
-            stickerId: "52002734"
-        };
+        let currentConfig = { type: 'flex' };
 
-        function updateStickerConfig() {
-            config.packageId = document.getElementById('pkgId').value;
-            config.stickerId = document.getElementById('stkId').value;
-            alert("後台設定已更新！現在模擬發送 Package:" + config.packageId + " 的貼圖。");
+        function toggleInput() {
+            const type = document.getElementById('actionType').value;
+            document.getElementById('keywordInputArea').style.display = (type === 'keyword') ? 'block' : 'none';
+            document.getElementById('imageInputArea').style.display = (type === 'image') ? 'block' : 'none';
         }
 
-        function sendCustomSticker() {
+        function saveConfig() {
+            currentConfig = {
+                pkgId: document.getElementById('pkgId').value,
+                stkId: document.getElementById('stkId').value,
+                type: document.getElementById('actionType').value,
+                keyword: document.getElementById('customKeyword').value,
+                imageUrl: document.getElementById('imageUrl').value
+            };
+            alert("CMS 設定已同步！");
+        }
+
+        function triggerSend() {
             const chatBox = document.getElementById('chatBox');
+            const stickerId = document.getElementById('stkId').value;
             
-            // 模擬用戶發送貼圖
+            // 1. 模擬發送貼圖
             const rightMsg = document.createElement('div');
             rightMsg.className = 'msg msg-right';
-            rightMsg.innerHTML = `
-                <div style="font-size:10px; color:#558030; margin-bottom:2px;">(ID: ${config.stickerId})</div>
-                <img src="https://stickershop.line-scdn.net/stickershop/v1/sticker/${config.stickerId}/android/sticker.png" class="sticker-img">
-            `;
+            rightMsg.innerHTML = `<img src="https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png" class="sticker-img">`;
             chatBox.appendChild(rightMsg);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // 模擬系統判斷並回覆
+            // 2. 根據 CMS 設定回覆
             setTimeout(() => {
-                const flexCard = document.createElement('div');
-                flexCard.className = 'flex-card';
-                flexCard.innerHTML = `
-                    <div class="flex-hero">🎁</div>
-                    <div class="flex-body">
-                        <div style="font-weight:bold; margin-bottom:5px;">任務完成！</div>
-                        <div style="font-size:12px; color:#666; margin-bottom:15px;">偵測到貼圖包 #${config.packageId}<br>您的限量好禮已準備就緒。</div>
-                        <div class="flex-btn" onclick="alert('開啟領獎頁面...')">領取你的任務好禮</div>
-                    </div>
-                `;
-                chatBox.appendChild(flexCard);
+                const replyContainer = document.createElement('div');
+                const type = document.getElementById('actionType').value;
+
+                if (type === 'flex') {
+                    replyContainer.className = 'flex-card';
+                    replyContainer.innerHTML = `
+                        <div style="background:#FFD700; height:80px; display:flex; justify-content:center; align-items:center; font-size:40px;">🎁</div>
+                        <div style="padding:15px; text-align:center;">
+                            <div style="font-weight:bold; font-size:14px;">任務好禮已送達！</div>
+                            <div style="background:#00b900; color:white; padding:8px; border-radius:5px; margin-top:10px; font-size:12px; cursor:pointer;">領取你的任務好禮</div>
+                        </div>`;
+                } else if (type === 'keyword') {
+                    replyContainer.className = 'msg msg-left';
+                    replyContainer.innerText = document.getElementById('customKeyword').value;
+                } else if (type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = document.getElementById('imageUrl').value;
+                    img.className = 'image-card';
+                    replyContainer.appendChild(img);
+                }
+
+                chatBox.appendChild(replyContainer);
                 chatBox.scrollTop = chatBox.scrollHeight;
             }, 800);
         }

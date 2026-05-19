@@ -3,45 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINE 跨 OA 貼圖自動化 CMS Demo</title>
+    <title>LINE 貼圖行為觸發自動化 CMS Demo</title>
     <style>
         :root { --line-green: #00b900; --line-blue: #7494C0; --dark-bg: #1e293b; }
         * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
-        body { margin: 0; padding: 20px; background: var(--dark-bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; gap: 30px; flex-wrap: wrap; }
+        body { margin: 0; padding: 20px; background: var(--dark-bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; gap: 40px; flex-wrap: wrap; }
         
-        /* 管理面板 */
-        .admin-panel { width: 320px; background: #f8f9fa; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: #333; }
-        .admin-panel h3 { margin-top: 0; color: var(--line-green); border-bottom: 2px solid var(--line-green); padding-bottom: 10px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
+        /* 視覺大外殼 */
+        .demo-container { display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; }
+        .view-wrapper { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .view-label { color: white; font-weight: bold; font-size: 15px; background: rgba(0,0,0,0.5); padding: 6px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
+
+        /* 左側：客戶端管理後台 */
+        .admin-panel { width: 340px; background: #f8f9fa; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: #333; height: 560px; display: flex; flex-direction: column; justify-content: space-between; }
+        .admin-panel h3 { margin-top: 0; color: var(--line-green); border-bottom: 2px solid var(--line-green); padding-bottom: 10px; font-size: 18px; margin-bottom: 20px; }
         .input-group { margin-bottom: 15px; }
-        label { font-size: 11px; font-weight: bold; color: #666; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        label { font-size: 11px; font-weight: bold; color: #666; display: block; margin-bottom: 5px; }
         input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: white; }
-        .update-btn { width: 100%; background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; transition: background 0.2s; }
+        .update-btn { width: 100%; background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.2s; font-size: 14px; }
         .update-btn:hover { background: #009900; }
-        .reset-btn { width: 100%; background: #64748b; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        .reset-btn { width: 100%; background: #64748b; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 12px; margin-top: 10px; }
         
-        /* 手機模擬器外殼 */
-        .phone-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .phone-label { color: white; font-weight: bold; font-size: 14px; background: rgba(0,0,0,0.4); padding: 4px 12px; border-radius: 20px; }
+        /* 右側：用戶端手機模擬器 */
         .phone-container { width: 320px; height: 560px; background: #fff; border: 10px solid #1a1a1a; border-radius: 36px; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .header { background: #2f3e54; color: white; padding: 12px; text-align: center; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; }
+        .header { background: #2f3e54; color: white; padding: 12px; text-align: center; font-size: 14px; font-weight: bold; }
         .line-chat-bg { background: var(--line-blue); height: calc(100% - 95px); padding: 12px; display: flex; flex-direction: column; overflow-y: auto; }
         
         /* 訊息樣式 */
-        .msg-meta { font-size: 10px; color: rgba(255,255,255,0.8); margin-bottom: 2px; padding-left: 5px; }
         .msg { padding: 10px 14px; border-radius: 16px; margin-bottom: 10px; font-size: 13px; max-width: 85%; word-break: break-all; line-height: 1.4; }
         .msg-left { background: #fff; align-self: flex-start; color: #333; border-top-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .msg-right { background: #85E249; align-self: flex-end; color: #333; border-top-right-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .sticker-img { width: 90px; height: 90px; display: block; }
 
-        /* Flex & Image Card */
+        /* Flex 卡片與 Coupon 樣式 */
         .flex-card { background: #fff; border-radius: 12px; overflow: hidden; width: 230px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-bottom: 10px; align-self: flex-start; border: 1px solid #e2e8f0; }
-        .flex-hero { background: linear-gradient(135deg, #34d399, #059669); height: 90px; display: flex; justify-content: center; align-items: center; font-size: 44px; }
+        .flex-hero { background: linear-gradient(135deg, #34d399, #059669); height: 80px; display: flex; justify-content: center; align-items: center; font-size: 40px; }
         .flex-body { padding: 12px; text-align: left; }
         .flex-title { font-weight: bold; font-size: 14px; color: #1e293b; margin-bottom: 4px; }
         .flex-desc { font-size: 11px; color: #64748b; margin-bottom: 12px; }
         .flex-btn { background: var(--line-green); color: white; text-align: center; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
         
-        .image-card { width: 180px; border-radius: 10px; margin-bottom: 10px; align-self: flex-start; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .coupon-card { background: #fffbeb; border: 1px dashed #f59e0b; border-radius: 12px; width: 230px; padding: 12px; margin-bottom: 10px; align-self: flex-start; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .coupon-title { color: #b45309; font-weight: bold; font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+        .coupon-desc { font-size: 11px; color: #78350f; margin-bottom: 8px; }
 
         .input-area { height: 45px; background: #fff; display: flex; align-items: center; padding: 0 12px; border-top: 1px solid #eee; justify-content: space-between; }
         .send-pill { flex-grow: 1; height: 28px; background: #f0f0f0; border-radius: 14px; margin-right: 8px; }
@@ -49,136 +53,133 @@
 </head>
 <body>
 
-    <div class="admin-panel">
-        <h3>跨 OA 觸發 CMS <span>v2.0</span></h3>
+    <div class="demo-container">
         
-        <div class="input-group">
-            <label>Package ID (貼圖包編號)</label>
-            <input type="text" id="pkgId" value="11537">
-        </div>
-        
-        <div class="input-group">
-            <label>Sticker ID (單張貼圖編號)</label>
-            <input type="text" id="stkId" value="52002734">
-        </div>
+        <div class="view-wrapper">
+            <div class="view-label">🖥️ 1. 品牌客戶端（CMS 後台配置）</div>
+            <div class="admin-panel">
+                <div>
+                    <h3>貼圖自動化回覆設定</h3>
+                    
+                    <div class="input-group">
+                        <label>Package ID</label>
+                        <input type="text" id="pkgId" value="11537">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Sticker ID</label>
+                        <input type="text" id="stkId" value="52002734">
+                    </div>
 
-        <div class="input-group">
-            <label>指定連動行為 (對應目標 OA-B)</label>
-            <select id="actionType" onchange="toggleInput()">
-                <option value="flex">跨 OA 派發：好禮 Flex Message</option>
-                <option value="keyword">跨 OA 派發：自訂關鍵字訊息</option>
-                <option value="image">跨 OA 派發：圖文視覺檔案</option>
-            </select>
-        </div>
+                    <div class="input-group">
+                        <label>用戶發送貼圖時，自動回覆：</label>
+                        <select id="actionType" onchange="toggleInput()">
+                            <option value="flex">Flex Message (圖文豐富卡片)</option>
+                            <option value="coupon">Coupon (電子優惠券)</option>
+                            <option value="text">純文字訊息</option>
+                        </select>
+                    </div>
 
-        <div id="keywordInputArea" class="input-group" style="display:none;">
-            <label>設定自動回應文字</label>
-            <input type="text" id="customKeyword" value="🎁 感謝您由 Sponsored Sticker 專案導流！這是為您準備的跨品牌聯名限定訊息。">
-        </div>
+                    <div id="textInputArea" class="input-group" style="display:none;">
+                        <label>設定純文字內容</label>
+                        <input type="text" id="customText" value="感謝您傳送本次活動指定貼圖！這是系統自動回覆給您的訊息。">
+                    </div>
 
-        <div id="imageInputArea" class="input-group" style="display:none;">
-            <label>圖片 URL</label>
-            <input type="text" id="imageUrl" value="https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&q=80">
-        </div>
-        
-        <button class="update-btn" onclick="saveConfig()">更新模組設定</button>
-        <button class="reset-btn" onclick="resetDemo()">重設聊天模擬器</button>
-    </div>
-
-    <div class="phone-wrapper">
-        <div class="phone-label">帳號 A (活動貼圖發送端)</div>
-        <div class="phone-container">
-            <div class="header">品牌活動官方帳號 A</div>
-            <div class="line-chat-bg" id="chatBoxA">
-                <div class="msg msg-left">歡迎！點擊右下方圖示模擬傳送本檔指定的聯名貼圖。</div>
-            </div>
-            <div class="input-area">
-                <div onclick="triggerCrossOAFlow()" style="font-size:22px; cursor:pointer; margin-right:4px;" title="點擊模擬傳送貼圖">💚</div>
-                <div class="send-pill"></div>
+                    <div id="couponInputArea" class="input-group" style="display:none;">
+                        <label>優惠券獎項名稱</label>
+                        <input type="text" id="couponName" value="星巴克買一送一電子即享券">
+                    </div>
+                </div>
+                
+                <div>
+                    <button class="update-btn" onclick="saveConfig()">更新並同步至手機端</button>
+                    <button class="reset-btn" onclick="resetDemo()">重設模擬對話</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="phone-wrapper">
-        <div class="phone-label">帳號 B (跨 OA 聯動接收端)</div>
-        <div class="phone-container">
-            <div class="header">集團聯動官方帳號 B</div>
-            <div class="line-chat-bg" id="chatBoxB">
-                <div class="msg msg-left" style="background: rgba(255,255,255,0.7); font-size:12px; text-align:center; align-self:center;">等待帳號 A 觸發 API 聯動機制...</div>
-            </div>
-            <div class="input-area">
-                <div style="font-size:22px; color: #ccc; cursor:not-allowed;">⌨️</div>
-                <div class="send-pill"></div>
+        <div class="view-wrapper">
+            <div class="view-label">📱 2. 消費者用戶端（手機 LINE 畫面）</div>
+            <div class="phone-container">
+                <div class="header">官方帳號聊天室</div>
+                <div class="line-chat-bg" id="chatBox">
+                    <div class="msg msg-left">歡迎！請點擊右下角的「😊」圖示，模擬傳送客戶在後台指定的貼圖。</div>
+                </div>
+                <div class="input-area">
+                    <div onclick="simulateUserSendSticker()" style="font-size:22px; cursor:pointer; margin-right:4px;" title="模擬用戶傳送指定貼圖">😊</div>
+                    <div class="send-pill"></div>
+                </div>
             </div>
         </div>
+
     </div>
 
     <script>
+        // 初始化本地設定快照
+        let currentSettings = {
+            type: 'flex',
+            stkId: '52002734',
+            text: '感謝您傳送本次活動指定貼圖！這是系統自動回覆給您的訊息。',
+            coupon: '星巴克買一送一電子即享券'
+        };
+
         function toggleInput() {
             const type = document.getElementById('actionType').value;
-            document.getElementById('keywordInputArea').style.display = (type === 'keyword') ? 'block' : 'none';
-            document.getElementById('imageInputArea').style.display = (type === 'image') ? 'block' : 'none';
+            document.getElementById('textInputArea').style.display = (type === 'text') ? 'block' : 'none';
+            document.getElementById('couponInputArea').style.display = (type === 'coupon') ? 'block' : 'none';
         }
 
         function saveConfig() {
-            alert("CMS 配置更新成功！已成功部署至對應的 Webhook API 機制。");
+            // 將後台輸入的資料儲存到記憶體中，模擬同步
+            currentSettings.stkId = document.getElementById('stkId').value;
+            currentSettings.type = document.getElementById('actionType').value;
+            currentSettings.text = document.getElementById('customText').value;
+            currentSettings.coupon = document.getElementById('couponName').value;
+            
+            alert("CMS 設定已成功更新！現在可以在右側手機模擬用戶傳送貼圖了。");
         }
 
-        function triggerCrossOAFlow() {
-            const chatBoxA = document.getElementById('chatBoxA');
-            const chatBoxB = document.getElementById('chatBoxB');
-            const stickerId = document.getElementById('stkId').value;
+        function simulateUserSendSticker() {
+            const chatBox = document.getElementById('chatBox');
             
-            // 1. 模擬使用者在「帳號 A」聊天室發送指定貼圖
-            const stickerMsg = document.createElement('div');
-            stickerMsg.className = 'msg msg-right';
-            stickerMsg.innerHTML = `<img src="https://stickershop.line-scdn.net/stickershop/v1/sticker/${stickerId}/android/sticker.png" class="sticker-img" onerror="this.src='https://developers.line.biz/assets/images/services/bot-designer-sticker.png'; this.style.width='70px';">`;
-            chatBoxA.appendChild(stickerMsg);
-            chatBoxA.scrollTop = chatBoxA.scrollHeight;
+            // 1. 用戶端視角：模擬用戶在手機聊天室發送貼圖
+            const userStickerMsg = document.createElement('div');
+            userStickerMsg.className = 'msg msg-right';
+            userStickerMsg.innerHTML = `<img src="https://stickershop.line-scdn.net/stickershop/v1/sticker/${currentSettings.stkId}/android/sticker.png" class="sticker-img" onerror="this.src='https://developers.line.biz/assets/images/services/bot-designer-sticker.png'; this.style.width='70px';">`;
+            chatBox.appendChild(userStickerMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
 
-            // 2. 模擬後端 Webhook 跨應用判斷，並將訊息推播至「帳號 B」
+            // 2. 系統回應視角：模擬 LINE Webhook 偵測到該貼圖，自動吐回客戶設定的訊息
             setTimeout(() => {
-                // 清除帳號 B 的初始提示字
-                if(chatBoxB.children.length === 1 && chatBoxB.children[0].innerText.includes("等待")) {
-                    chatBoxB.innerHTML = '';
-                }
-
                 const replyContainer = document.createElement('div');
-                const type = document.getElementById('actionType').value;
 
-                // 產生 OA 的名稱提示
-                const metaName = document.createElement('div');
-                metaName.className = 'msg-meta';
-                metaName.innerText = '集團聯動官方帳號 B';
-                chatBoxB.appendChild(metaName);
-
-                if (type === 'flex') {
+                if (currentSettings.type === 'flex') {
                     replyContainer.className = 'flex-card';
                     replyContainer.innerHTML = `
                         <div class="flex-hero">🎁</div>
                         <div class="flex-body">
-                            <div class="flex-title">跨界聯名貼圖任務禮</div>
-                            <div class="flex-desc">偵測到您已於品牌 A 使用指定合作貼圖，特此發送集團專屬電子即享券。</div>
-                            <div class="flex-btn" onclick="alert('成功開啟優惠券！')">點我領取即享券</div>
+                            <div class="flex-title">指定貼圖任務禮</div>
+                            <div class="flex-desc">太棒了！偵測到您發送了本次活動指定貼圖，特此奉上專屬限定好禮。</div>
+                            <div class="flex-btn" onclick="alert('成功領取活動禮！')">開啟 Flex 卡片獎勵</div>
                         </div>`;
-                } else if (type === 'keyword') {
+                } else if (currentSettings.type === 'coupon') {
+                    replyContainer.className = 'coupon-card';
+                    replyContainer.innerHTML = `
+                        <div class="coupon-title">🎫 LINE 限定電子優惠券</div>
+                        <div class="coupon-desc">獎項：${currentSettings.coupon}</div>
+                        <div class="flex-btn" style="background:#f59e0b;" onclick="alert('優惠券兌換成功！')">立即點選兌換</div>`;
+                } else if (currentSettings.type === 'text') {
                     replyContainer.className = 'msg msg-left';
-                    replyContainer.innerText = document.getElementById('customKeyword').value;
-                } else if (type === 'image') {
-                    const img = document.createElement('img');
-                    img.src = document.getElementById('imageUrl').value;
-                    img.className = 'image-card';
-                    replyContainer.appendChild(img);
+                    replyContainer.innerText = currentSettings.text;
                 }
 
-                chatBoxB.appendChild(replyContainer);
-                chatBoxB.scrollTop = chatBoxB.scrollHeight;
-            }, 1000); // 模擬 1 秒鐘的 Webhook API 傳輸延遲
+                chatBox.appendChild(replyContainer);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 700); // 模擬短暫的網路傳輸延遲
         }
 
         function resetDemo() {
-            document.getElementById('chatBoxA').innerHTML = '<div class="msg msg-left">歡迎！點擊右下方圖示模擬傳送本檔指定的聯名貼圖。</div>';
-            document.getElementById('chatBoxB').innerHTML = '<div class="msg msg-left" style="background: rgba(255,255,255,0.7); font-size:12px; text-align:center; align-self:center;">等待帳號 A 觸發 API 聯動機制...</div>';
+            document.getElementById('chatBox').innerHTML = '<div class="msg msg-left">歡迎！請點擊右下角的「😊」圖示，模擬傳送客戶在後台指定的貼圖。</div>';
         }
     </script>
 </body>
